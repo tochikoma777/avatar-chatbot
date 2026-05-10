@@ -1,0 +1,27 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "A visualization chatbot backend"
+authors = [
+    {name = "tochikoma777",email = "brother.777.lei@gmail.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.136.1,<0.137.0)",
+    "uvicorn[standard] (>=0.46.0,<0.47.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)",
+    "openai (>=2.34.0,<3.0.0)",
+    "pydantic-settings (>=2.14.0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.3,<10.0.0)",
+    "pytest-asyncio (>=1.3.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
+]
