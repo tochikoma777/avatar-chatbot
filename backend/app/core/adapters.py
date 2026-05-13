@@ -45,3 +45,17 @@ class DeepSeekAdapter:
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
             raise
+
+    # 新增：非流式聊天，支持工具调用
+    async def chat_non_stream(self, messages: list, tools: list = None):
+        """非流式请求，用于处理工具调用场景"""
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            tools=tools,
+            temperature=0.7,
+            max_tokens=1024,
+            stream=False  # 关键
+        )
+        return response.choices[0].message
+        # message 对象包含 .content 和 .tool_calls 属性
