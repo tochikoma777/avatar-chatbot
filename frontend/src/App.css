@@ -27,6 +27,8 @@ body {
   border-right: 2px solid rgba(255, 255, 255, 0.1);
   transition: background 0.5s ease;
   overflow: hidden;
+  background-color: #1a1a2e;  /* 深色底，保证图片未加载时不纯黑 */
+  background-repeat: no-repeat;
 }
 
 /* 预设背景样式 */
@@ -51,13 +53,10 @@ body {
 
 /* 背景切换按钮 */
 .bg-switcher {
-  position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* position: absolute; */
   display: flex;
   gap: 8px;
-  z-index: 10;
+  flex-wrap: wrap;
 }
 
 .bg-btn {
@@ -272,4 +271,94 @@ body {
   background: #4a4a6a;
   cursor: not-allowed;
   transform: none;
+}
+
+/* 背景控制容器 */
+.bg-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;  /* 关键：垂直排列 */
+  gap: 12px;               /* 子元素之间的垂直间距 */
+  z-index: 10;
+}
+
+/* AI 背景生成器 */
+.ai-bg-generator {
+  display: flex;
+  gap: 8px;
+}
+
+.ai-bg-generator input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  font-size: 14px;
+  outline: none;
+}
+
+.ai-bg-generator button {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: none;
+  background: #5d7bdb;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+.ai-bg-generator button:disabled {
+  background: #4a4a6a;
+  cursor: not-allowed;
+}
+
+.generating-hint {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  position: absolute;
+  bottom: -20px;
+  left: 10px;
+}
+
+/* 麦克风按钮 */
+.mic-btn {
+  background: #444;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mic-btn.active {
+  background: #e6436b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(230, 67, 107, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(230, 67, 107, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 67, 107, 0); }
+}
+
+/* 播放指示器 */
+.speaking-indicator {
+  color: #5d7bdb;
+  font-size: 14px;
+  margin-left: 10px;
+  white-space: nowrap;
 }

@@ -5,27 +5,22 @@ import { loadOml2d } from 'oh-my-live2d';
 export default function Live2DView({ isSpeaking }) {
   const containerRef = useRef(null);
   const oml2dInstance = useRef(null);
+  const mouthAnimationRef = useRef(null);
 
+  // 初始化 Live2D
   useEffect(() => {
-    // 确保只加载一次
     if (containerRef.current && !oml2dInstance.current) {
       const instance = loadOml2d({
         models: [
           {
             path: '/models/haru/haru01.model.json',
-            position: [10, 50],
+            position: [0, 60],
             scale: 0.08,
           },
         ],
-        statusBar: {
-          disabled: true,
-        },
-        menus: {
-          disabled: true,
-        },
-        tips: {
-          disabled: true,
-        },
+        statusBar: { disabled: true },
+        menus: { disabled: true },
+        tips: { disabled: true },
         dockedPosition: 'left',
         parentElement: containerRef.current,
       });
@@ -35,19 +30,50 @@ export default function Live2DView({ isSpeaking }) {
 
     return () => {
       if (oml2dInstance.current) {
-        // oh-my-live2d 实例可能通过 .destroy() 方法清理，但需确认
-        // 若没有则尝试 null
         try {
-          oml2dInstance.current?.destroy?.();
-        } catch (e) {}
+          oml2dInstance.current.destroy?.();
+        } catch (e) { /* ignore */ }
         oml2dInstance.current = null;
       }
     };
   }, []);
 
-  // 保留口型同步接口（后续可继续扩展）
+  // 根据 isSpeaking 驱动口型动画
   useEffect(() => {
-    // 目前 oh-my-live2d 的口型同步暂未启用
+    const instance = oml2dInstance.current;
+    if (!instance) return;
+
+    // 取消旧动画
+    if (mouthAnimationRef.current) {
+      cancelAnimationFrame(mouthAnimationRef.current);
+      mouthAnimationRef.current = null;
+    }
+
+    if (isSpeaking) {
+      let startTime = Date.now();
+      const animateMouth = () => {
+        try {
+          // oh-my-live2d 的官方 API，设置指定参数的值（范围 0~1）
+          const elapsed = (Date.now() - startTime) / 1000;
+          const value = 0.0 + 0.9 * (Math.sin(elapsed * 12) * 0.5 + 0.5);
+          instance.setParameterValueByName('ParamMouthOpenY', value);
+        } catch (e) { /* ignore */ }
+        mouthAnimationRef.current = requestAnimationFrame(animateMouth);
+      };
+      animateMouth();
+    } else {
+      // 停止说话，嘴巴闭合
+      try {
+        instance.setParameterValueByName('ParamMouthOpenY', 0);
+      } catch (e) { /* ignore */ }
+    }
+
+    return () => {
+      if (mouthAnimationRef.current) {
+        cancelAnimationFrame(mouthAnimationRef.current);
+        mouthAnimationRef.current = null;
+      }
+    };
   }, [isSpeaking]);
 
   return (
