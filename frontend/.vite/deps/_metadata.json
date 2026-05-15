@@ -1,0 +1,38 @@
+{
+  "hash": "7983c9ee",
+  "configHash": "a99733a2",
+  "lockfileHash": "aff17304",
+  "browserHash": "5cd41ef8",
+  "optimized": {
+    "oh-my-live2d": {
+      "src": "../../node_modules/oh-my-live2d/dist/index.js",
+      "file": "oh-my-live2d.js",
+      "fileHash": "40c40229",
+      "needsInterop": false
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "03c28f4f",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "fd9bc411",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "d42b3080",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-CFx7f7Oh": {
+      "file": "chunk-CFx7f7Oh.js",
+      "isDynamicEntry": false
+    }
+  }
+}
