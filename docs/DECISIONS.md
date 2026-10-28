@@ -45,7 +45,9 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 
 **何时应该改用方案 C**：项目改名/换定位（例如从"我的看板娘"变成通用 Live2D 聊天框架）、或所有权/许可证发生变化时。
 
-**关于旧 README**：**不做副本留档，直接覆盖**。理由：tag `v0.5.0-mvp` 已完整固化原始仓库状态，`git show v0.5.0-mvp:README.md` 可随时取回；再放一份 `README.old.md` 只会制造"哪份才权威"的歧义。同理，本项目的"历史截图"也应通过 tag 或 Release 附件保存，而不是留在工作区。
+**关于旧 README**：**不做副本留档，直接覆盖**。理由：tag `v0.5.0-mvp` 已完整固化原始仓库状态，`git show v0.5.0-mvp:README.md` 可随时取回；再放一份 `README.old.md` 只会制造"哪份才权威"的歧义。
+
+**更新（2026-10-28）**：旧版**截图**按用户决定**例外保留**在 `docs/images/image.png`，用于和 v1 截图直接对照。它与 tag 中的文件 md5 完全一致（`141e7e26…`），属于冗余，代价是仓库多约 1.2MB；新的 v1 截图按同一原则压缩为 WebP（2560×1600 PNG 2.79MB → 1920×1200 WebP 123KB），原图仅保留在本地，不入库。
 
 **代价**：main 分支上会有一条较大的 merge commit；建议在 PR 描述里贴本文档链接。
 
@@ -281,6 +283,16 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 `[x]` / `【x】` 四种写法，未知括号（如 `[注]`）原样保留，并去掉正文开头多余空行。
 
 **验证**：V-12。
+
+### A-10 README 效果图替换为 v1 真机截图
+
+- 新图来自用户在真实浏览器（Windows Chrome + 真实 GPU）中的实际使用截图：Live2D 角色正常渲染、
+  两次工具调用（时间 / 冷知识）与情绪徽章可见 —— 同时**反证了 D-10 的修复有效**（此前的无头环境
+  无法渲染，只是环境限制）。
+- 体积治理：2560×1600 RGBA PNG（2.79 MB）→ 1920×1200 WebP（123 KB），肉眼无差；
+  原图仅保留在本地（`~/avatar-chatbot-screenshot-2560.png`），不入库。
+- 旧版截图按用户决定保留在 `docs/images/image.png` 作对照（见 D-01 更新）。
+- README 同步：更新图片路径、把占位 alt 文本改为描述性文案（无障碍/SEO），目录结构补 `docs/` 与 `scripts/`。
 
 ---
 

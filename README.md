@@ -3,7 +3,9 @@
 > 一个会眨眼、会说话、会换装的 Live2D 看板娘：真实流式对话、多轮记忆、Agent 工具调用、语音闭环、AI 生成背景。
 > 前端 React + Vite，后端 FastAPI + DeepSeek（兼容 OpenAI 协议）。
 
-效果图：![alt text](image.png)
+效果图（v1.0，绫波凛 · 星夜场景 · 含工具调用）：
+
+![Avatar Chatbot v1.0 界面：左侧为 Live2D 看板娘与星夜场景，右侧为聊天面板，展示了时间查询与冷知识两次工具调用](docs/images/screenshot-v1.0.webp)
 
 ## 📚 文档导航
 
@@ -115,6 +117,8 @@ avatar-chatbot/
         ├── services/     # api.js（SSE 解析）
         ├── config/       # personas / scenes / settings
         └── styles/       # base / layout / stage / chat / ui
+├── docs/                   # 文档：审查 / 决策 / 架构 / 路线图 / 经验手册 + images/
+└── scripts/                # git-hooks（密钥拦截）+ install-hooks.sh
 ```
 
 ---
