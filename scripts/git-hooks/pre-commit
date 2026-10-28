@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# 提交前检查：阻止真实密钥进入版本库
+# 由 scripts/install-hooks.sh 启用（git config core.hooksPath scripts/git-hooks）
+set -euo pipefail
+
+KEY_PATTERN='sk-[A-Za-z0-9_-]{20,}'
+BLOCKED=0
+
+staged_files() {
+  git diff --cached --name-only --diff-filter=ACM
+}
+
+# 1) 扫描暂存内容中的真实密钥
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
+  if git show ":$file" 2>/dev/null | grep -IqE "$KEY_PATTERN"; then
+    echo "✗ $file 疑似包含真实 API Key" >&2
+    BLOCKED=1
+  fi
+done < <(staged_files)
+
+# 2) 禁止提交 .env 实例文件（只允许 .env.example / .env.sample 这类模板）
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
+  case "$file" in
+    *.env.example|*.env.sample|*.env.template) continue ;;
+  esac
+  if printf '%s' "$file" | grep -Eq '(^|/)\.env(\.(local|development|production|test))?$'; then
+    echo "✗ 不允许提交环境变量实例文件：$file" >&2
+    BLOCKED=1
+  fi
+done < <(staged_files)
+
+if [ "$BLOCKED" -ne 0 ]; then
+  cat >&2 <<'MSG'
+
+提交已阻止。正确做法：
+  1. 真实密钥只放在 backend/.env（已被 .gitignore 忽略）
+  2. backend/.env.example 只保留占位符 your_deepseek_api_key_here
+  3. 若不慎提交过密钥，请立即到服务商后台吊销并重新生成
+
+如确认是误报，可用 git commit --no-verify 跳过（不推荐）。
+MSG
+  exit 1
+fi
+
+exit 0

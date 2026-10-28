@@ -199,6 +199,47 @@ SSE 事件类型：
 
 ---
 
+## 🔐 密钥与安全
+
+真实密钥**只放在 `backend/.env`**。这个文件已被 `.gitignore` 忽略，不会进入版本库。
+
+```bash
+cd backend
+cp .env.example .env      # 然后只在 .env 里填 DEEPSEEK_API_KEY
+```
+
+⚠️ **不要**把密钥写进 `backend/.env.example`——它是会被提交的**模板**，只能保留占位符 `your_deepseek_api_key_here`。
+
+仓库自带一个 pre-commit 钩子：提交时若检测到疑似 `sk-...` 密钥或 `.env` 实例文件，会直接拦截。克隆后执行一次即可启用（配置保存在本地，不影响他人）：
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+随时可以自查：
+
+```bash
+git check-ignore -v backend/.env     # 应输出 .gitignore 命中行
+git log --all -- backend/.env        # 应无输出（说明从未提交）
+git grep -nE 'sk-[A-Za-z0-9]{20,}'   # 应无输出（说明追踪文件里没有密钥）
+```
+
+**如果密钥曾出现在提交、截图、聊天记录或公开仓库中，请立即到服务商后台吊销并重新生成。** 删除文件或改写历史都无法让已泄露的 key 重新变安全。
+
+---
+
+## 🩺 启动故障排查
+
+| 现象 | 原因 | 处理 |
+| :--- | :--- | :--- |
+| `ERROR: [Errno 98] Address already in use` | 端口 8000/5173 被旧进程占用 | `ss -ltnp \| grep -E ':8000\|:5173'` 找到 PID 后 `kill <PID>`，或改用 `--port 8001` |
+| 顶栏一直显示「离线陪聊」 | 没有读到 `.env`，或 key 为空 | 确认 `.env` 在 `backend/` 目录下、文件名为 `.env`、`uvicorn` 也在 `backend/` 下启动；`curl localhost:8000/api/v1/health/health` 看 `llm_ready` |
+| 对话报「模型服务开小差了：401」 | key 无效/已吊销/额度用尽 | 重新生成 key，填入 `.env` 后重启后端 |
+| 前端页面能开但请求 404 | 后端没启动或端口不是 8000 | 启动后端，或设置 `VITE_BACKEND_URL` 指向正确地址 |
+| 看板娘区域空白 | WebGL 不可用或模型未加载 | 打开控制台看是否有 `[Live2D]` 警告；换 Chrome/Edge，确认已启用硬件加速 |
+
+---
+
 ## 🗺️ 后续计划
 
 完整的优先级排序与验收标准见 [docs/ROADMAP.md](docs/ROADMAP.md)。近期重点：

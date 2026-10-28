@@ -186,6 +186,24 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 
 **边界**：`PLAYBOOK.md` 只写"可证伪的原则与可复制的流程"，不写本项目的实现细节（那属于 ARCHITECTURE）；每次项目结束把新教训补进去，编号递增、不重排。
 
+### D-16 密钥管理：模板/实例分离 + 提交前拦截
+
+**背景**：配置 API Key 时发生了真实事故——Key 被写进了 `backend/.env.example`（**被 git 追踪的模板文件**），一旦 `git add -A` 就会连同密钥一起提交、推送、公开。同时 `.gitignore` 只写了 `.env`，没有覆盖 `.env.local` / `.env.production` 等变体。
+
+**选项**
+
+| 方案 | 优点 | 缺点 |
+| :--- | :--- | :--- |
+| A. 只靠 `.gitignore` | 零成本 | 拦不住"写错文件"；变体文件名易漏；无法发现历史遗留 |
+| B. `.gitignore` 全覆盖 + 模板/实例严格分离 + pre-commit 钩子 | 能拦住最常见失误（写错文件、`git add -A`）；离线可用；对新贡献者同样生效 | 钩子可被 `--no-verify` 绕过；`core.hooksPath` 是本地配置，新克隆需执行一次安装脚本 |
+| C. 引入密钥管理服务 / Vault | 企业级轮换与审计 | 对单机可跑的项目过重，破坏"克隆即用" |
+
+**决策**：**B**。
+
+**落地**：`.gitignore` 覆盖 `.env`、`.env.*` 并显式 `!` 保留 `.env.example`；新增 `scripts/git-hooks/pre-commit`（扫描暂存内容中的 `sk-...` 与 `.env` 实例文件）与 `scripts/install-hooks.sh`（设置 `core.hooksPath`）；README 增加「密钥与安全」与「启动故障排查」两节。
+
+**代价与边界**：钩子只是"降低概率"，不是安全边界；真正的兜底是**一旦怀疑泄露就立即轮换密钥**。文档必须把这条写在显眼位置，否则团队容易误以为"有钩子就安全"。
+
 ---
 
 ## 3. 动作记录
@@ -246,6 +264,24 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 
 **验证**：V-11（59 项断言全部通过，0 失败）。
 
+### A-09 密钥误置事件处置 + 真实模型链路修复
+
+**现象**：用户配置 Key 后启动报错；排查发现两件事同时发生。
+
+1. **启动失败根因**：我在上一轮验证时遗留的 uvicorn 仍占用 8000 端口，用户执行启动命令时报
+   `ERROR: [Errno 98] Address already in use`。已结束遗留进程并释放 8000/5173。
+2. **密钥误置**：Key 被写进 `backend/.env.example`（受版本控制）。`git log -S` 确认**从未提交**：
+   - 还原 `.env.example` 为占位符版本；
+   - 保留 `backend/.env`（含 Key，已被忽略）不动；
+   - 新增 pre-commit 钩子并自测（伪造密钥文件被拦截，exit=1）；
+   - `.gitignore` 扩展覆盖 `.env.*` 变体，同时显式保留 `.env.example`。
+
+**同时修复**（真实模型暴露、此前被 mock 掩盖）：模型实际输出 `[calm]` 裸标签，而解析器只认
+`[emotion:calm]`，导致标签直接出现在第一条回复的正文里。现在兼容 `[emotion:x]` / `[情绪：x]` /
+`[x]` / `【x】` 四种写法，未知括号（如 `[注]`）原样保留，并去掉正文开头多余空行。
+
+**验证**：V-12。
+
 ---
 
 ## 4. 验证记录
@@ -281,6 +317,21 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 2. Live2D **无法在无头环境完成视觉验证**：SwiftShader 下 WebGL 可用、模型文件全部 200、
    库回调 `onLoad` 也能到达，但画面为空白（三种参数组合一致）。因此 Playwright 类 E2E
    （ROADMAP R-06）不应把"模型像素是否可见"作为断言，只能断言 canvas 存在与 `onLoad` 状态。
+
+| V-12 | **真实模型链路**（配置 Key 后） | 两轮真实对话 + 情绪解析用例 | ✅ 通过；修复标签泄漏缺陷 |
+
+### V-12 明细
+
+| 检查项 | 结果 |
+| :--- | :--- |
+| `llm_ready` | ✅ true（`.env` 被正确读取） |
+| 真实流式 + 工具调用（sakura / 查询时间） | ✅ 2.4s，事件含 `tool_calling` → `tool_result` → `content` → `finish_reason` |
+| 第二角色（neko） | ✅ 1.5s，情绪 `happy`，口癖符合角色（咲不喵、猫娘才喵） |
+| 情绪标签泄漏 | ❌ 修复前正文以 `[calm]` 开头 → ✅ 修复后无残留 |
+| `EmotionBuffer` 用例（标准/裸标签/方头括号/中文情绪词/带空格/非情绪括号/无标签） | ✅ 7/7 |
+
+**结论**：手写 SSE 假数据只能验证"协议解析"正确，**验证不了模型会不会按约定格式输出**。
+真实链路必须至少跑一轮（PLAYBOOK 反模式"用 mock 掩盖外部依赖"）。
 
 > 说明：V-08/V-09/V-10 使用临时脚本（jsdom@22 + esbuild IIFE 打包）执行，脚本未入库；正式测试方案见 ROADMAP P1。
 

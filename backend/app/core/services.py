@@ -15,7 +15,15 @@ from app.core.tools import TOOLS, TOOL_LABELS, execute_tool
 logger = logging.getLogger(__name__)
 
 EMOTIONS = {"happy", "shy", "sad", "angry", "surprise", "calm"}
-EMOTION_RE = re.compile(r"^\s*[\[［]\s*(?:emotion|情绪)\s*[:：]\s*([a-zA-Z一-龥]+)\s*[\]］]\s*")
+EMOTION_ALIAS = {
+    "开心": "happy", "高兴": "happy", "害羞": "shy", "难过": "sad", "伤心": "sad",
+    "生气": "angry", "惊讶": "surprise", "平静": "calm", "冷静": "calm",
+}
+# 兼容模型的多种写法：[emotion:happy] / [情绪：开心] / [happy] / 【calm】
+# 注意：括号内不是已知情绪词时，必须原样保留（避免吞掉 [注]、[1] 这类正常内容）
+EMOTION_RE = re.compile(
+    r"^\s*[\[［【]\s*(?:(?:emotion|情绪)\s*[:：]\s*)?([a-zA-Z]{3,12}|[一-龥]{1,4})\s*[\]］】]\s*"
+)
 # 等待标签出现时最多缓冲的字符数，超过则原样输出
 EMOTION_BUFFER_LIMIT = 48
 
@@ -25,32 +33,39 @@ def sse(payload: dict) -> str:
 
 
 class EmotionBuffer:
-    """在流的最前面截获 [emotion:xxx] 标签，其余内容原样透传。"""
+    """在流的最前面截获情绪标签，其余内容原样透传。"""
 
     def __init__(self):
         self.pending = ""
         self.resolved = False
+        self.emitted = False
 
     def feed(self, chunk: str) -> tuple[str, str | None]:
         if self.resolved:
+            if not self.emitted:
+                # 标签后面常跟一个换行，去掉正文开头多余的空白，避免气泡首行留白
+                chunk = chunk.lstrip(" \t\r\n")
+                if not chunk:
+                    return "", None
+                self.emitted = True
             return chunk, None
 
         self.pending += chunk
         match = EMOTION_RE.match(self.pending)
         if match:
             self.resolved = True
-            emotion = match.group(1).strip().lower()
-            alias = {"开心": "happy", "害羞": "shy", "难过": "sad", "生气": "angry",
-                     "惊讶": "surprise", "平静": "calm"}
-            emotion = alias.get(emotion, emotion)
+            raw = self.pending[: match.end()]
+            word = match.group(1).strip().lower()
+            emotion = EMOTION_ALIAS.get(word, word)
             rest = self.pending[match.end():]
             self.pending = ""
-            if emotion not in EMOTIONS:
-                return rest, None
-            return rest, emotion
+            if emotion in EMOTIONS:
+                return rest, emotion
+            # 不是情绪标签（例如 [注]、[1]），原样还给调用方
+            return raw + rest, None
 
         # 还没凑齐标签：只可能是以 '[' 开头的短前缀，否则直接放行
-        if len(self.pending) >= EMOTION_BUFFER_LIMIT or not self.pending.lstrip().startswith(("[", "［")):
+        if len(self.pending) >= EMOTION_BUFFER_LIMIT or not self.pending.lstrip().startswith(("[", "［", "【")):
             out, self.pending = self.pending, ""
             return out, None
         return "", None

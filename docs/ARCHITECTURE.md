@@ -225,6 +225,10 @@ unmount
 
 前端偏好（localStorage `avatar-chat.settings`）：`autoSpeak / voiceURI / rate / pitch / volume / asrEnabled / asrLang / showModel / modelScale / modelOffsetX / modelOffsetY / mouthSync / effectsLevel / themeAccent / bubbleAnimation / showTimestamps / customPersona / enableTools`。
 
+> **配置文件的约定**：真实值只写 `backend/.env`（被忽略，不进版本库）；仓库里只保留 `backend/.env.example` 模板（占位符）。
+> 提交前的密钥扫描由 `scripts/git-hooks/pre-commit` 负责，克隆后需执行 `bash scripts/install-hooks.sh` 启用。
+> 详见 [DECISIONS.md](./DECISIONS.md) D-16 与 README「密钥与安全」。
+
 ---
 
 ## 6. 扩展指南
