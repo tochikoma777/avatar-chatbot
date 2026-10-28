@@ -1,1 +1,10 @@
-{"message":"你好，能自我介绍一下吗？","system_prompt":"你是一个活泼可爱的二次元猫娘。"}
+{
+  "message": "你好，能自我介绍一下吗？",
+  "persona_id": "sakura",
+  "system_prompt": null,
+  "enable_tools": true,
+  "history": [
+    { "role": "user", "content": "我们之前聊到哪儿了？" },
+    { "role": "assistant", "content": "我们刚说到你今天想去海边看夕阳～" }
+  ]
+}
