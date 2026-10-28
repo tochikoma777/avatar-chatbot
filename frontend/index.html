@@ -1,13 +1,23 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN" data-accent="auto">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Avatar Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Avatar Chatbot —— 二次元 Live2D 看板娘，支持流式对话、语音交互与 AI 背景生成。" />
+    <meta name="theme-color" content="#0b0718" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Quicksand:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Avatar Chatbot ✿ 二次元看板娘</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Cubism 2.1 运行时：oh-my-live2d 加载 haru01.moc 前必须先注入 window.Live2D -->
+    <script src="/lib/live2d.min.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

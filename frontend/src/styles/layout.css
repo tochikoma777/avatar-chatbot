@@ -1,0 +1,163 @@
+/* ===== 应用骨架 ===== */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(90% 60% at 12% 0%, rgba(155, 107, 255, 0.22), transparent 60%),
+    radial-gradient(80% 60% at 90% 10%, rgba(255, 123, 184, 0.18), transparent 60%),
+    linear-gradient(160deg, var(--bg-deep-2), var(--bg-deep));
+}
+
+/* 顶栏 */
+.topbar {
+  flex: 0 0 auto;
+  height: 54px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(12, 8, 28, 0.55);
+  backdrop-filter: blur(14px);
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--persona-accent), var(--accent-2));
+  box-shadow: 0 6px 18px rgba(255, 123, 184, 0.35);
+  animation: brandSpin 9s linear infinite;
+}
+
+@keyframes brandSpin {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.06); }
+}
+
+.brand-text {
+  font-size: 15px;
+  background: linear-gradient(90deg, #fff, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  color: var(--ink-dim);
+}
+.status-pill.ok {
+  border-color: rgba(94, 224, 255, 0.45);
+  color: #b9f2ff;
+}
+.status-pill.warn {
+  border-color: rgba(255, 189, 105, 0.45);
+  color: #ffd9a3;
+}
+.status-pill.offline {
+  border-color: rgba(255, 93, 122, 0.5);
+  color: #ffb3c0;
+}
+
+.mobile-tabs {
+  display: none;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 99px;
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+}
+.mobile-tabs button {
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--ink-dim);
+  transition: all 0.2s;
+}
+.mobile-tabs button.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--persona-accent), var(--accent-2));
+}
+
+/* 主工作区 */
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.stage {
+  position: relative;
+  flex: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  /* 隔离 stacking context，避免 Live2D 的 fixed 画布盖住顶栏与聊天区 */
+  isolation: isolate;
+}
+
+.chat {
+  flex: 1;
+  min-width: 360px;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: linear-gradient(180deg, rgba(24, 18, 48, 0.9), rgba(14, 10, 30, 0.95));
+}
+
+/* 响应式：窄屏切换为单栏 */
+@media (max-width: 900px) {
+  .mobile-tabs {
+    display: flex;
+  }
+  .brand-text {
+    display: none;
+  }
+  .chat {
+    max-width: none;
+    min-width: 0;
+  }
+  .app.view-stage .chat {
+    display: none;
+  }
+  .app.view-chat .stage {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
