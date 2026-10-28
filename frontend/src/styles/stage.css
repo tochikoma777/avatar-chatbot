@@ -1,0 +1,497 @@
+/* ===== 看板娘舞台 ===== */
+.stage-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transition: background 0.6s ease;
+}
+
+.scene-starry {
+  background: radial-gradient(120% 100% at 50% 0%, #342a6b 0%, #1a1440 45%, #08061a 100%);
+}
+.scene-sakura {
+  background: linear-gradient(180deg, #ffe6f3 0%, #ffc9e4 30%, #f8a9cf 62%, #e97fb6 100%);
+}
+.scene-sunset {
+  background: linear-gradient(180deg, #ffd6a5 0%, #ff9f7d 38%, #d06ea8 72%, #573d8f 100%);
+}
+.scene-classroom {
+  background: linear-gradient(180deg, #fdf0d8 0%, #f0d3a4 42%, #c99a63 100%);
+}
+.scene-cyber {
+  background: linear-gradient(180deg, #1b0b3a 0%, #37156b 38%, #07122e 100%);
+}
+.scene-simple {
+  background: linear-gradient(180deg, #241c46 0%, #14102b 100%);
+}
+
+.stage-ai-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  animation: bgIn 0.9s ease both;
+}
+@keyframes bgIn {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.stage-aurora {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(35% 30% at 22% 32%, rgba(255, 123, 184, 0.4), transparent 70%),
+    radial-gradient(30% 28% at 78% 24%, rgba(155, 107, 255, 0.38), transparent 70%),
+    radial-gradient(40% 34% at 55% 78%, rgba(94, 224, 255, 0.28), transparent 72%);
+  filter: blur(38px);
+  animation: auroraDrift 22s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+  0% { transform: translate3d(-3%, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, -2%, 0) scale(1.08); }
+  100% { transform: translate3d(-2%, 3%, 0) scale(1.03); }
+}
+
+.stage-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 70% at 50% 45%, transparent 55%, rgba(6, 3, 18, 0.55) 100%),
+    linear-gradient(180deg, rgba(6, 3, 18, 0.35), transparent 40%, rgba(6, 3, 18, 0.45));
+  pointer-events: none;
+}
+
+/* --- 粒子特效 --- */
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.petal {
+  position: absolute;
+  top: -12vh;
+  border-radius: 62% 38% 55% 45% / 60% 55% 45% 40%;
+  background: linear-gradient(135deg, #fff 0%, #ffd7ea 40%, #ff8fc0 100%);
+  box-shadow: 0 2px 8px rgba(255, 143, 192, 0.35);
+  animation-name: petalFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+@keyframes petalFall {
+  0% { transform: translate3d(0, -12vh, 0) rotate(0deg) scale(0.9); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate3d(calc(var(--sway) * 0.6), 45vh, 0) rotate(220deg) scale(1); }
+  92% { opacity: 1; }
+  100% { transform: translate3d(var(--sway), 112vh, 0) rotate(520deg) scale(0.95); opacity: 0; }
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  animation-name: twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff);
+  border-radius: 99px;
+  opacity: 0;
+  animation: shoot 8s linear infinite;
+}
+.shooting-star-1 { top: 14%; left: -20%; animation-delay: 1.5s; }
+.shooting-star-2 { top: 32%; left: -20%; animation-delay: 5.5s; }
+@keyframes shoot {
+  0% { transform: translate3d(0, 0, 0) rotate(18deg); opacity: 0; }
+  10% { opacity: 1; }
+  40% { transform: translate3d(140%, 40vh, 0) rotate(18deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  0% { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0; }
+  20% { opacity: 0.55; }
+  80% { opacity: 0.5; }
+  100% { transform: translate3d(30px, -120px, 0) scale(1.2); opacity: 0; }
+}
+
+.dust {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 244, 214, 0.85);
+  box-shadow: 0 0 6px rgba(255, 226, 160, 0.7);
+  animation: dustDrift linear infinite;
+}
+@keyframes dustDrift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  25% { opacity: 0.8; }
+  100% { transform: translate3d(40px, -160px, 0); opacity: 0; }
+}
+
+.grid-floor {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: -10%;
+  height: 55%;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(94, 224, 255, 0.35) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(0deg, rgba(255, 123, 184, 0.3) 0 1px, transparent 1px 44px);
+  transform: perspective(420px) rotateX(66deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(180deg, transparent, #000 60%);
+  animation: gridMove 6s linear infinite;
+}
+@keyframes gridMove {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 44px, 60px 0; }
+}
+.grid-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(45% 30% at 50% 88%, rgba(94, 224, 255, 0.35), transparent 70%);
+  filter: blur(10px);
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+}
+
+/* --- Live2D --- */
+.stage-character {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.live2d-host {
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+.live2d-host canvas {
+  filter: drop-shadow(0 18px 34px rgba(10, 4, 30, 0.5));
+}
+
+.live2d-fallback {
+  position: absolute;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.fallback-figure {
+  position: relative;
+  width: 130px;
+  height: 150px;
+  margin: 0 auto;
+  animation: breathe 4s ease-in-out infinite;
+}
+.fallback-figure .fallback-face {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 100px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 46px;
+  background: radial-gradient(circle at 40% 35%, #fff, var(--persona-accent));
+  box-shadow: 0 10px 30px rgba(255, 123, 184, 0.4);
+}
+.fallback-figure .fallback-body {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 70px;
+  border-radius: 46px 46px 18px 18px;
+  background: linear-gradient(180deg, var(--persona-accent), var(--accent-2));
+}
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.02); }
+}
+.fallback-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.live2d-hidden-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 42%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+/* --- 舞台上方的角色信息卡 --- */
+.stage-hud {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  /* Live2D 画布的 z-index 为 9997，界面层需要更高 */
+  z-index: 9998;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.character-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: rgba(12, 8, 28, 0.45);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-1);
+}
+.character-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--persona-accent), var(--accent-2));
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+.character-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.character-meta strong {
+  font-size: 15px;
+}
+.character-meta span {
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.mood-chip {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  white-space: nowrap;
+}
+.mood-chip.speaking {
+  border-color: var(--accent);
+  color: #fff;
+  background: linear-gradient(135deg, var(--persona-accent), var(--accent-2));
+  animation: moodPulse 1.2s ease-in-out infinite;
+}
+@keyframes moodPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 123, 184, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 123, 184, 0); }
+}
+
+.stage-actions {
+  display: flex;
+  gap: 8px;
+}
+.poke-btn {
+  border-radius: 99px;
+}
+
+.stage-loading {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 9998;
+  padding: 8px 18px;
+  border-radius: 99px;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(12, 8, 28, 0.6);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  animation: floatHint 2s ease-in-out infinite;
+}
+@keyframes floatHint {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -6px); }
+}
+
+/* --- 背景工坊 --- */
+.bg-studio {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+  border-radius: var(--radius-l);
+  border: 1px solid var(--line);
+  background: rgba(12, 8, 28, 0.5);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  max-height: 62vh;
+}
+.bg-studio.closed {
+  max-height: 46px;
+}
+
+.bg-studio-toggle {
+  width: 100%;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.bg-studio-toggle .chev {
+  margin-left: auto;
+  transition: transform 0.25s;
+  display: inline-flex;
+}
+.bg-studio-toggle .chev.up {
+  transform: rotate(180deg);
+}
+
+.bg-studio-body {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(62vh - 46px);
+  overflow-y: auto;
+}
+
+.scene-row,
+.style-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.scene-chip,
+.style-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  transition: all 0.2s;
+}
+.scene-chip:hover,
+.style-chip:hover {
+  color: #fff;
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.scene-chip.active,
+.style-chip.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--persona-accent), var(--accent-2));
+  box-shadow: 0 6px 18px rgba(255, 123, 184, 0.28);
+}
+.scene-emoji {
+  font-size: 14px;
+}
+
+.ai-row {
+  display: flex;
+  gap: 8px;
+}
+.ai-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+  font-size: 13.5px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ai-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 123, 184, 0.16);
+}
+.ai-generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 9px 18px;
+  font-size: 13.5px;
+}
+
+.studio-tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gallery {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.gallery-item {
+  position: relative;
+}
+.gallery-thumb {
+  width: 62px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.gallery-thumb:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+}
+.gallery-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--danger);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
