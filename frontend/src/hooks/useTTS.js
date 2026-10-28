@@ -37,7 +37,17 @@ export default function useTTS(settings, { onBoundary } = {}) {
   const [speaking, setSpeaking] = useState(false);
   const [voices, setVoices] = useState([]);
   const boundaryRef = useRef(onBoundary);
+  const watchdogRef = useRef(0);
   boundaryRef.current = onBoundary;
+
+  // 部分浏览器（尤其 Chrome）在长句/被取消时会漏发 onend，导致 speaking 永久为 true，
+  // 表现为「一直显示说话中、口型不停」。这里用看门狗兜底复位。
+  const clearWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      window.clearTimeout(watchdogRef.current);
+      watchdogRef.current = 0;
+    }
+  }, []);
 
   useEffect(() => {
     if (!supported) return undefined;
@@ -51,28 +61,36 @@ export default function useTTS(settings, { onBoundary } = {}) {
 
   const cancel = useCallback(() => {
     if (!supported) return;
+    clearWatchdog();
     window.speechSynthesis.cancel();
     setSpeaking(false);
-  }, [supported]);
+  }, [clearWatchdog, supported]);
 
   const speak = useCallback(
     (text) => {
       if (!supported || !text?.trim()) return;
+      clearWatchdog();
       window.speechSynthesis.cancel();
 
       const chunks = splitText(text.replace(/[*`#>|]/g, ''));
       const voice = pickVoice(voices, settings.voiceURI, 'zh-CN');
+      const rate = settings.rate ?? 1;
       let index = 0;
+
+      const finish = () => {
+        clearWatchdog();
+        setSpeaking(false);
+      };
 
       const speakNext = () => {
         if (index >= chunks.length) {
-          setSpeaking(false);
+          finish();
           return;
         }
         const utterance = new SpeechSynthesisUtterance(chunks[index]);
         utterance.lang = voice?.lang || 'zh-CN';
         if (voice) utterance.voice = voice;
-        utterance.rate = settings.rate ?? 1;
+        utterance.rate = rate;
         utterance.pitch = settings.pitch ?? 1;
         utterance.volume = settings.volume ?? 1;
         utterance.onboundary = () => boundaryRef.current?.();
@@ -80,19 +98,34 @@ export default function useTTS(settings, { onBoundary } = {}) {
           index += 1;
           speakNext();
         };
-        utterance.onerror = () => setSpeaking(false);
+        utterance.onerror = finish;
         window.speechSynthesis.speak(utterance);
       };
 
       setSpeaking(true);
+
+      // 预估时长：中文约 0.28s/字（按语速换算），额外留 4s 余量，上限 3 分钟。
+      const chars = chunks.join('').length;
+      const estimate = Math.min(180000, ((chars * 0.28) / Math.max(rate, 0.5) + 4) * 1000);
+      watchdogRef.current = window.setTimeout(() => {
+        watchdogRef.current = 0;
+        try {
+          window.speechSynthesis.cancel();
+        } catch {
+          /* ignore */
+        }
+        setSpeaking(false);
+      }, estimate);
+
       speakNext();
     },
-    [settings.rate, settings.pitch, settings.volume, settings.voiceURI, supported, voices],
+    [clearWatchdog, settings.pitch, settings.rate, settings.volume, settings.voiceURI, supported, voices],
   );
 
   useEffect(() => () => {
+    clearWatchdog();
     if (supported) window.speechSynthesis.cancel();
-  }, [supported]);
+  }, [clearWatchdog, supported]);
 
   return { speak, cancel, speaking, voices, supported };
 }

@@ -111,6 +111,7 @@ const Live2DView = forwardRef(function Live2DView(
             setReady(true);
             onState?.('ready');
           } else if (status === 'fail') {
+            console.warn('[Live2D] 模型加载失败，已降级为占位形象：', modelPath);
             setFailed(true);
             onState?.('error');
           }

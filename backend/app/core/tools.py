@@ -58,6 +58,7 @@ async def get_weather(city: str = "北京") -> str:
                 headers={"User-Agent": "avatar-chatbot/1.0"},
             )
             resp.raise_for_status()
+            data = resp.json()
         current = data["current_condition"][0]
         area = data.get("nearest_area", [{}])[0].get("areaName", [{}])[0].get("value", city)
         desc = current["weatherDesc"][0]["value"]

@@ -232,6 +232,20 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 - 新增 `docs/PLAYBOOK.md`（跨项目复用的方法论：十条原则、接手流程、四文档模型、审查清单、"假实现"识别手册、提效技巧、反模式、通用 Checklist）
 - 更新 `body.json` 为新 schema、`backend/.env.example` 补全可调项
 
+### A-08 推送前全量回归：修复回归缺陷 + 语音看门狗
+**触发**：按"推送前跑一遍完整测试"的要求执行回归，覆盖 T-01 ~ T-38（见 V-11）。
+
+- **修复回归缺陷**：`core/tools.py` 的 `get_weather` 在去重时把 `data = resp.json()` 一并删掉，
+  导致该工具必然抛 `NameError` 并落入降级分支（表面"网络不通"）。已补回并复测通过。
+  *这是本次重构引入的缺陷，不在原项目审查清单内。*
+- **健壮性**：`hooks/useTTS.js` 增加朗读看门狗——部分浏览器（尤其 Chrome 长句/被取消时）
+  会漏发 `onend`，此前会让 `speaking` 永久为 true（表现为一直显示"说话中"、口型不停）。
+  现在按字数与语速估算时长，超时强制复位并 cancel。
+- **可观测性**：`Live2DView` 在 `onLoad('fail')` 时输出 `console.warn` 并带上模型路径，
+  便于用户反馈"模型没出来"时定位（此前是静默降级）。
+
+**验证**：V-11（59 项断言全部通过，0 失败）。
+
 ---
 
 ## 4. 验证记录
@@ -248,6 +262,25 @@ git tag -a v1.0.0 -m "v1.0.0: real streaming, personas, tools, anime UI"
 | V-08 | 首屏渲染 | jsdom 加载生产包（注入 `live2d.min.js`） | ✅ `.app/.topbar/.stage/.chat/.empty-state/.composer` 均存在；5 角色条、6 场景条、4 条建议词 |
 | V-09 | 完整对话流 | jsdom 模拟输入 + 点击发送，喂入预设 SSE | ✅ 用户/助手气泡各 1，工具提示 1 条且位于回复**之前**并标记完成，`strong/code/list` 均渲染，结束后按钮恢复为"发送" |
 | V-10 | 白屏专项 | jsdom **不注入**运行时加载原构建 | ❌ 复现 `Could not find Cubism 2 runtime.`，`#root` 为空（证明 F-01 成立） |
+| V-11 | **推送前全量回归** | 见下方明细 | ✅ 59 项断言全部通过；过程中发现并修复 2 个缺陷（见 A-08） |
+
+### V-11 明细（2026-10-28 推送前）
+
+| 域 | 断言数 | 覆盖内容 | 结果 |
+| :--- | :---: | :--- | :--- |
+| 后端接口 | 11 | SSE 头与事件时序（status → emotion → content → finish）、离线标记、分片数、空/超长消息 422、未知角色回落、CORS 预检与 localhost 正则 | 11/11 |
+| 工具与生图 | 20 | schema↔注册表↔标签一致性、7 个工具正常路径、注入/除零/参数上限/非法 JSON 等异常路径、生图 data URI、缓存命中与一致性、非法尺寸 422 | 20/20 |
+| 前端交互（jsdom） | 19 | 首屏骨架、5 角色/6 场景/4 建议词、发送与流式渲染、工具提示顺序与完成态、Markdown、情绪联动、持久化、切角色历史隔离、设置抽屉开关与 Esc | 19/19 |
+| 构建与资源 | 7 | lint 0 error、build 产物、dev server、`/lib/live2d.min.js` 200/129056B、模型 JSON 200、模块转换、`/api` 代理 | 7/7 |
+| 人工复测 | 2 | 天气工具修复后（北京 / Tokyo）返回真实数据 | 2/2 |
+
+**本次回归的补充结论**
+
+1. `get_weather` 的 `NameError` 属于**回归缺陷**（A-08 修复），说明"工具降级 + 友好文案"会掩盖真实错误——
+   这类兜底必须伴随日志（`logger.warning` 已保留），否则 CI 绿灯也可能全是降级。
+2. Live2D **无法在无头环境完成视觉验证**：SwiftShader 下 WebGL 可用、模型文件全部 200、
+   库回调 `onLoad` 也能到达，但画面为空白（三种参数组合一致）。因此 Playwright 类 E2E
+   （ROADMAP R-06）不应把"模型像素是否可见"作为断言，只能断言 canvas 存在与 `onLoad` 状态。
 
 > 说明：V-08/V-09/V-10 使用临时脚本（jsdom@22 + esbuild IIFE 打包）执行，脚本未入库；正式测试方案见 ROADMAP P1。
 
